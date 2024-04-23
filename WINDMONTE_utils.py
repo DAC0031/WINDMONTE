@@ -1,3 +1,5 @@
+# WINDMONTE is licensed under GNU GPL v3, see COPYING.txt
+
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
