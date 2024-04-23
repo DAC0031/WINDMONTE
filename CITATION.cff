@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Curriston"
+  given-names: "Drew"
+title: "WINDMONTE Software"
+version: 1.0
+date-released: 2024-04-23
+url: "https://github.com/DAC0031/WINDMONTE"

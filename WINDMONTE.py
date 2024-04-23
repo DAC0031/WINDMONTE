@@ -3,7 +3,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import WINDMONTE_utils
+import utilities
 from scipy import stats
 import pickle
 from tqdm import tqdm
@@ -39,12 +39,12 @@ tic = time.time()
 #region 1: Data input and MCM setup (Check to ensure all data, parameters, and error sources are correct for analysis)
 
 # 1.1 Input MCM parameters
-M = 200  # Number of MCM trials to run.  
-outputfile = 'WINDMONTE_outputs.pkl'  # specify output file
+M = 1000  # Number of MCM trials to run.  Recommend >500 
+outputfile = 'output_data.pkl'  # specify output file
 UPCs = True  # Set to True to compute the UPCs
-UPC_M = 50  # Set the number of trials to simulate for each error source in calculating UPCs
+UPC_M = 100  # Set the number of trials to simulate for each error source in calculating UPCs.  Recommend >100.
 
-s_flag = 'DCR'  # Choose methodology for random uncertainty: 
+s_flag = 'P'  # Choose methodology for random uncertainty: 
     # "P" to propagate from variable U_random, 
     # "DCR" to determine VOI uncertainty from direct comparison of replicate data.  Must have replicate data and a function defined to populate that data.
     # "None" to only evaluate systematic uncertainty
@@ -59,12 +59,10 @@ testinfo: test constants, notes, information pertaining to all data points in te
 data_multisample: Same as data, but in arrays of multisample data rather than a single float value.  Used to calculate random uncertainty for near-real-time analysis.
 
 This version has 3 options to load data:  
-    1.  Load_source = 'LSWT_raw':  Load raw data files in the format used at the LSWT, only applicable at the LSWT
-    2.  Load_source = '*.pkl':  Load a .pkl file with variables "data", "testinfo", and "data_multisample" using the formats specified above.
-    3.  Load_source = '*.csv':  Load a .csv file that has the "data" and "testinfo" variables written in the format of 'inputdata_example.csv' provided.  This option does not have multisample data for propagating random uncertainty from that source.
+    1.  Load_source = '*.pkl':  Load a .pkl file with variables "data", "testinfo", and "data_multisample" using the formats specified above.
+    2.  Load_source = '*.csv':  Load a .csv file that has the "data" and "testinfo" variables written in the format of 'inputdata_example.csv' provided.  This option does not have multisample data for propagating random uncertainty from that source.
+    3.  Add function to generate predicted test data based on test planning estimates.
 """
-
-Load_source = 'inputdata_example.pkl' #'LSWT_raw' #'inputdata_example.csv'  
 
 # Uncomment to load data from .pkl file
 Load_source = 'inputdata_example.pkl'
@@ -75,12 +73,12 @@ with open(Load_source, 'rb') as f:
 """ Load_source = 'inputdata_example.csv'
 data,testinfo = WINDMONTE_utils.load_csv_data(Load_source) """
 
-# Add section to generate predicted data for test planning
+# If using predicted data for test planning, input data here
 
-WINDMONTE_utils.check_list_of_dicts(data)  # utility to check and make sure input data is in the right format
+utilities.check_list_of_dicts(data)  # utility to check and make sure input data is in the right format
 
 # 1.3 Define systematic uncertainty for elemental error sources 
-U_systematic = WINDMONTE_utils.U_systematic() # instantiate from systematic uncertainty class
+U_systematic = utilities.U_systematic() # instantiate from systematic uncertainty class
 
 # add systematic elemental error sources (see WINDMONTE_README.doc)
 U_systematic.add_error_source(measurements=['Psi'],distribution='norm',params=[0,0.0295],source='b_Psi',units='deg')
@@ -100,20 +98,13 @@ U_systematic.add_error_source(measurements=['RM'],distribution='norm',params=[0,
 U_systematic.add_error_source(measurements=['YM'],distribution='norm',params=[0,2.6/(2*12)],source='b_YM',units='ft.lbf')
 
 # 1.4 Define random uncertainty for Variables of Interest (VOIs) using direct comparison of replicate data --OR-- define random uncertainty for elemental error sources 
-U_random = WINDMONTE_utils.U_random() # instantiate from random uncertainty class
+U_random = utilities.U_random() # instantiate from random uncertainty class
 replicate_data = {} # placeholder for replicate data
 
 if s_flag == 'P':
     # add random elemental error sources to propagate with MCM
     U_random.add_error_source(measurements=['Theta'],distribution='norm',params=[0,0.0088],source='s_Q-flex',units='deg')
-    U_random.add_error_source(measurements=['Psi'],distribution='norm',params=[0,0.005],source='s_Psi',units='deg')
-    U_random.add_error_source(measurements=['Phi'],distribution='norm',params=[0,0.005],source='s_Phi',units='deg')
     U_random.add_error_source(measurements=['Qset','Qact'],distribution='norm',params=[0,0.06],source='s_Q',units='psf')
-    U_random.add_error_source(measurements=['Pstat'],distribution='norm',params=[0,0.016],source='s_P_stat',units='psf')
-    U_random.add_error_source(measurements=['Ptot'],distribution='norm',params=[0,0.013],source='s_P_tot',units='psf')
-    U_random.add_error_source(measurements=['Baro'],distribution='norm',params=[0,0.06],source='s_P_baro',units='psf')
-    U_random.add_error_source(measurements=['Temp'],distribution='norm',params=[0,0.09],source='s_T',units='deg F')
-    U_random.add_error_source(measurements=['TempT'],distribution='norm',params=[0,0.09],source='s_T0',units='deg F')
     U_random.add_error_source(measurements=['NF'],distribution='norm',params=[0,0.077],source='s_NF',units='lbf')  
     U_random.add_error_source(measurements=['SF'],distribution='norm',params=[0,0.031],source='s_SF',units='lbf')
     U_random.add_error_source(measurements=['AF'],distribution='norm',params=[0,0.038],source='s_AF',units='lbf')
@@ -139,11 +130,11 @@ elif s_flag == 'DCR':
 
 
 #region 2: Run MCM Simulation for propagation of systematic uncertainty
-RunData = WINDMONTE_utils.MCM_sim(data, testinfo, U_systematic, U_random, s_flag, M)
+RunData = utilities.MCM_sim(data, testinfo, U_systematic, U_random, s_flag, M)
 
 if s_flag == 'DCR':
     # Add random uncertainty from direct comparison of replicate values if replicate data is available
-    RunData = WINDMONTE_utils.s_replicates(RunData,replicate_data)
+    RunData = utilities.s_replicates(RunData,replicate_data)
 
 toc = time.time()
 print('Total time elapsed = ' + str(toc-tic))
@@ -151,7 +142,7 @@ print('Run ' + str(testinfo['RunNum']) + ' complete')
 
 # Calculate UPCs if desired 
 if UPCs:
-    WINDMONTE_utils.UPCs(RunData, data, testinfo, U_systematic, U_random, s_flag, UPC_M, replicate_data)
+    utilities.UPCs(RunData, data, testinfo, U_systematic, U_random, s_flag, UPC_M, replicate_data)
     
 # Save results
 with open(outputfile, 'wb') as f:  

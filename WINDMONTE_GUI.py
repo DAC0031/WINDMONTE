@@ -1,3 +1,5 @@
+# WINDMONTE is licensed under GNU GPL v3, see COPYING.txt
+
 import tkinter as tk
 from tkinter import filedialog
 import matplotlib.pyplot as plt
@@ -264,7 +266,7 @@ voi_section = VOI_Section(root, "VOI")
 # Perform load of default file
 global RunData, U_systematic, U_random
 # Open a file dialog to select a data file
-file_path = "WINDMONTE_outputs.pkl"
+file_path = "output_data.pkl"
 print('Loading default file {}'.format(file_path))
 try:
     with open(file_path, 'rb') as f:
