@@ -671,27 +671,12 @@ def MCM_sim(data, testinfo, U_systematic, U_random, s_flag, M):
     LHSsystematic = stats.qmc.LatinHypercube(d=U_systematic.number).random(n=M)  # get LHS percentiles based on number of systematic error sources and number of MCM trials
     U_systematic.updateLHS(LHSsystematic)  # update the LHS percentiles for each systematic error source for simulating error for each measurement and MCM iteration
 
-    if s_flag == 'P':
+    if s_flag == 'P': # propagate random uncertainty if applicable
         if True:  # Set LHS to False to use a pseudo-random draw for simulating random error
             U_random.updateLHS(False)
         else:  # if desiring to conduct a LHS sample of random error sources, use the following lines
             LHSrandom = stats.qmc.LatinHypercube(d=U_random.number).random(n=M)  # get LHS percentiles based on number of random error sources and number of MCM trials
             U_random.updateLHS(LHSrandom)  # update the LHS percentiles for each systematic error source for simulating error for each measurement and MCM iteration
-    elif s_flag == 'DCR':
-        # load replicate data for later
-        with open('Replicatedata_obj4.pkl', 'rb') as f:  
-            s_interp,replicates,s_replicates = pickle.load(f)
-
-        # Need to update replicate data addition
-        """ for point in tqdm(range(len(D))):
-            for el in D_out[point].keys():
-                if el in list(s_interp.keys()):
-                    if el in OutputData[point].keys():
-                        OutputData[point][el].addPDF({"variable":el, "type": 'S', 'source':'Replicate Data', 'PDF':'norm', 'STD':np.interp(OutputData[point]['AlphaC'].nom,s_interp[el][0],s_interp[el][1])})
-                        OutputData[point][el].U = np.sqrt((OutputData[point][el].S[0].std())**2 + np.std(OutputData[point][el].pert)**2)
-                    elif el in InputData[point].keys():
-                        InputData[point][el].addPDF({"variable":el, "type": 'S', 'source':'Replicate Data', 'PDF':'norm', 'STD':np.interp(OutputData[point]['AlphaC'].nom,s_interp[el][0],s_interp[el][1])})
-                        InputData[point][el].U = np.sqrt((InputData[point][el].S[0].std())**2 + np.std(InputData[point][el].pert)**2) """
 
     # 2.3 Generate M sets of seed values by simulating error
     print('Generating seed values with simulated error for {} data points'.format(len(data)))
@@ -716,7 +701,7 @@ def MCM_sim(data, testinfo, U_systematic, U_random, s_flag, M):
 
     return RunData
 
-def UPCs(RunData, data, testinfo, U_systematic, U_random, s_flag, UPC_M):
+def UPCs(RunData, data, testinfo, U_systematic, U_random, s_flag, UPC_M, replicate_data):
     UPC_results = []
     for j in range(len(data)):
         UPC_results.append({})
@@ -762,41 +747,65 @@ def UPCs(RunData, data, testinfo, U_systematic, U_random, s_flag, UPC_M):
         source.UPCflag = False
         #print('UPCs complete for source:{}'.format(source.source))
 
+
     # Flag each random uncertainty separately and run simulation
     source_num = 0
     print('Conducting UPC simulations for random error sources')
-    for source in tqdm(U_random.sources):
-        UPCData = TestRun()
-        for j in range(len(data)):
-            UPCData.append(DataPoint())
-            for el in VOIs:
-                UPCData[j][el] = VOI(key=el,nom=data_out[j][el])
+    if s_flag == 'P':
+        for source in tqdm(U_random.sources):
+            UPCData = TestRun()
+            for j in range(len(data)):
+                UPCData.append(DataPoint())
+                for el in VOIs:
+                    UPCData[j][el] = VOI(key=el,nom=data_out[j][el])
 
-        # Turn this source UPC flag on
-        source.UPCflag = True
-        # Run simulation
-        LHSrandom = stats.qmc.LatinHypercube(d=1).random(n=UPC_M)[:,0]  # get LHS percentiles based on number of systematic error sources and number of MCM trials
-        source.LHS = False  # update the LHS percentiles for each systematic error source for simulating error for each measurement and MCM iteration, or set to False to do random draw
-        sim_data_in = simulate_error(data,UPC_M,U_systematic,U_random)
-        sim_data_out = []
-        for i in range(UPC_M):
-            # run data reduction equations (DREs)
-            sim_data_out.append(DREs.eval(sim_data_in[i],testinfo))
-            UPCData.trialupdate(sim_data_out[i],sim_data_in[i])
-        # Use simulated data to determing interval limits and standard deviation of simulated result populations
-        UPCData.simupdate()
+            # Turn this source UPC flag on
+            source.UPCflag = True
+            # Run simulation
+            LHSrandom = stats.qmc.LatinHypercube(d=1).random(n=UPC_M)[:,0]  # get LHS percentiles based on number of systematic error sources and number of MCM trials
+            source.LHS = False  # update the LHS percentiles for each systematic error source for simulating error for each measurement and MCM iteration, or set to False to do random draw
+            sim_data_in = simulate_error(data,UPC_M,U_systematic,U_random)
+            sim_data_out = []
+            for i in range(UPC_M):
+                # run data reduction equations (DREs)
+                sim_data_out.append(DREs.eval(sim_data_in[i],testinfo))
+                UPCData.trialupdate(sim_data_out[i],sim_data_in[i])
+            # Use simulated data to determing interval limits and standard deviation of simulated result populations
+            UPCData.simupdate()
 
-        # Save in UPC_dict
-        source_num += 1
-        for point in range(len(data)):
-            for el in VOIs:
-                try: UPC_results[point][el][source.source] = UPCData[point][el].U
-                except: UPC_results[point][el]['b'+str(source_num)] = UPCData[point][el].U
+            # Save in UPC_dict
+            source_num += 1
+            for point in range(len(data)):
+                for el in VOIs:
+                    try: UPC_results[point][el][source.source] = UPCData[point][el].U
+                    except: UPC_results[point][el]['b'+str(source_num)] = UPCData[point][el].U
 
-        # turn flag back off
-        source.UPCflag = False
+            # turn flag back off
+            source.UPCflag = False
+    elif s_flag == 'DCR':
+      
+        for el in replicate_data.keys():
+            UPCData = TestRun()
+            for j in range(len(data)):
+                UPCData.append(DataPoint())
+                for VOI_i in VOIs:
+                    UPCData[j][VOI_i] = VOI(key=VOI_i,nom=data_out[j][VOI_i])
 
-        #print('UPCs complete for source:{}'.format(source.source))
+            # Run simulation (could make this faster not running a simulation, but will do that later)
+            sim_data_in = simulate_error(data,UPC_M,U_systematic,U_random)
+            sim_data_out = []
+            for i in range(UPC_M):
+                # run data reduction equations (DREs)
+                sim_data_out.append(DREs.eval(sim_data_in[i],testinfo))
+                UPCData.trialupdate(sim_data_out[i],sim_data_in[i])
+            # Use simulated data to determing interval limits and standard deviation of simulated result populations
+            UPCData.simupdate()
+
+            UPCData = s_replicates(UPCData,replicate_data)
+
+            # Save in UPC_dict
+            for point in range(len(data)):
+                UPC_results[point][el]['s_replicate'] = UPCData[point][el].U
 
     # Save the U_r value from RunData for all error sources included
     for point in range(len(RunData)):
@@ -813,5 +822,17 @@ def UPCs(RunData, data, testinfo, U_systematic, U_random, s_flag, UPC_M):
             RunData[point][el].UPCs = tmp_UPC
 
 
+def s_replicates(RunData,replicate_data):
 
+    K = 2 # uncertainty expansion factor
+
+    for el in RunData[1].keys(): # loop through all keys in RunData
+        if el in list(replicate_data.keys()): # if the element has random uncertainty defined from direct comparison of replicates
+            for point in range(len(RunData)): # update combined uncertainty and add random uncertainty PDF for each datapoint in RunData
+                alpha_values, VOI_values = zip(*replicate_data[el]) # zip replicate data into AOA and VOI data
+                b = RunData[point][el].U  # propagated systematic uncertainty
+                s = K*np.interp(RunData[point]['AlphaC'].nom,np.array(alpha_values),np.array(VOI_values))  # interpolate the random uncertainty at the set condition
+                RunData[point][el].U = np.sqrt(b**2+s**2)  # combined random and systematic in quadriture, expand by K, and save as combined uncertainty 
+
+    return RunData
 

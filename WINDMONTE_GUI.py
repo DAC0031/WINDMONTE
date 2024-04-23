@@ -98,10 +98,10 @@ class Run_Section:
         self.boxplot_button.pack(side=tk.TOP, pady=5)
         self.u_voi_button = tk.Button(self.frame, text="Plot Uncertainty Magnitudes", command=self.plot_U_VOI)
         self.u_voi_button.pack(side=tk.TOP, pady=5)
-        self.u_and_UPC_button = tk.Button(self.frame, text="Uncertainty Magnitudes & UPCs", command=self.plot_U_and_UPCs)
-        self.u_and_UPC_button.pack(side=tk.TOP, pady=5)
         self.upcs_button = tk.Button(self.frame, text="Plot UPCs", command=self.plot_UPCs)
         self.upcs_button.pack(side=tk.TOP, pady=5)
+        self.u_and_UPC_button = tk.Button(self.frame, text="Uncertainty Magnitudes & UPCs", command=self.plot_U_and_UPCs)
+        self.u_and_UPC_button.pack(side=tk.TOP, pady=5)
 
     def set_default_entry(self, entry, default_text):
         entry.insert('0',default_text)
