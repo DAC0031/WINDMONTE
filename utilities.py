@@ -95,6 +95,8 @@ class u_source:
         distribution_map = {
             'norm': stats.norm,
             'uniform': stats.uniform,
+            'triang': stats.triang,
+            'beta': stats.beta,
             # Add more distributions as needed
         }
         distribution_class = distribution_map.get(self.distribution)
@@ -114,6 +116,8 @@ class u_source:
         distribution_map = {
             'norm': stats.norm,
             'uniform': stats.uniform,
+            'triang': stats.triang,
+            'beta': stats.beta,
             # Add more distributions as needed
         }
         distribution_class = distribution_map.get(self.distribution)

@@ -44,7 +44,7 @@ outputfile = 'output_data.pkl'  # specify output file
 UPCs = True  # Set to True to compute the UPCs
 UPC_M = 100  # Set the number of trials to simulate for each error source in calculating UPCs.  Recommend >100.
 
-s_flag = 'P'  # Choose methodology for random uncertainty: 
+s_flag = 'none'  # Choose methodology for random uncertainty: 
     # "P" to propagate from variable U_random, 
     # "DCR" to determine VOI uncertainty from direct comparison of replicate data.  Must have replicate data and a function defined to populate that data.
     # "None" to only evaluate systematic uncertainty
@@ -80,7 +80,13 @@ utilities.check_list_of_dicts(data)  # utility to check and make sure input data
 # 1.3 Define systematic uncertainty for elemental error sources 
 U_systematic = utilities.U_systematic() # instantiate from systematic uncertainty class
 
-# add systematic elemental error sources (see WINDMONTE_README.doc)
+""" Add systematic elemental error sources (see WINDMONTE_README.doc)
+follow the format used in the example:
+    - measurements: defines which measurements (keys in data[i] dictionaries) this error source affects
+    - distribution/params: the type of PDF and parameters as defined in the scipy.stats documentation.  
+    - source: label the source for plotting later
+    - units: list the units, must match the units in the 'data' variable nominal values for each measurement the error source applies to
+"""
 U_systematic.add_error_source(measurements=['Psi'],distribution='norm',params=[0,0.0295],source='b_Psi',units='deg')
 U_systematic.add_error_source(measurements=['Phi'],distribution='norm',params=[0,0.025],source='b_Phi',units='deg')
 U_systematic.add_error_source(measurements=['Pstat'],distribution='norm',params=[0,0.005],source='b_P_stat',units='psf')
@@ -99,7 +105,7 @@ U_systematic.add_error_source(measurements=['YM'],distribution='norm',params=[0,
 
 # 1.4 Define random uncertainty for Variables of Interest (VOIs) using direct comparison of replicate data --OR-- define random uncertainty for elemental error sources 
 U_random = utilities.U_random() # instantiate from random uncertainty class
-replicate_data = {} # placeholder for replicate data
+replicate_data = {} # define the replicate data variable
 
 if s_flag == 'P':
     # add random elemental error sources to propagate with MCM
@@ -112,9 +118,9 @@ if s_flag == 'P':
     U_random.add_error_source(measurements=['RM'],distribution='norm',params=[0,0.046],source='s_RM',units='in.lbf')
     U_random.add_error_source(measurements=['YM'],distribution='norm',params=[0,0.010],source='s_YM',units='in.lbf')
 elif s_flag == 'DCR':
-    # if direct comparison of replicate data is used
+    # if direct comparison of replicate data is used, include that data here and select "DCR" for s_flag variable.
 
-    # Example load of unexpanded random uncertainty for VOIs in list of tuple format.  1st element of tuple is AOA [deg], 2nd is unexpanded random uncertainty for the VOI at that AOA.
+    # Example load of unexpanded (1 standard deviation) random uncertainty for VOIs in list of tuple format.  1st element of tuple is AOA [deg], 2nd is unexpanded random uncertainty for the VOI at that AOA.
     ### REPLACE WITH YOUR REPLICATE DATA RANDOM UNCERTANTIES
     replicate_data['CD'] = [(-5.1696176180857, 0.0001591001714773477), (-3.9038281366313283, 0.0002328149047544271), (-2.7015872529049942, 0.000255926596458534), (-1.4653745819689186, 0.00023525321670086246), (0.005571468152566158, 0.0002702930907591112), (1.4625085741663215, 0.0003232038437630706), (2.5085521866487785, 0.00022311370322637323), (3.782178415561224, 0.0001975598105961035), (5.26902419943794, 0.0002841372898124322), (6.3518042509958565, 0.0002677303360101057), (7.686353639591748, 0.0006978682620026499), (8.824421183061578, 0.0018574082451621157), (9.987800930228191, 0.0005839499314171011)]
     replicate_data['CL'] = [(-5.1696176180857, 0.0018709575732063172), (-3.9038281366313283, 0.001989294285249109), (0.005571468152566158, 0.0018901707900155947), (2.5085521866487785, 0.002383971631659089), (5.076555544067032, 0.0021087021830378167), (8.863682914191438, 0.0030536688041053295), (9.987800930228191, 0.0017020507250227065)]
@@ -129,13 +135,15 @@ elif s_flag == 'DCR':
 #endregion
 
 
-#region 2: Run MCM Simulation for propagation of systematic uncertainty
+#region 2: Run MCM Simulation for propagation of measurand uncertainty
+# !!! This region should not require any modification by the user.
 RunData = utilities.MCM_sim(data, testinfo, U_systematic, U_random, s_flag, M)
 
 if s_flag == 'DCR':
     # Add random uncertainty from direct comparison of replicate values if replicate data is available
     RunData = utilities.s_replicates(RunData,replicate_data)
 
+# print time stamp
 toc = time.time()
 print('Total time elapsed = ' + str(toc-tic))
 print('Run ' + str(testinfo['RunNum']) + ' complete')
@@ -149,8 +157,12 @@ with open(outputfile, 'wb') as f:
     pickle.dump([RunData,U_systematic,U_random],f)
 print("Simulation data saved to file: {}".format(outputfile))
 
+#endregion
+
 
 #region 3: Plot results or run the WINDMONTE_GUI code
+
+# Confidence level for expanding the uncertainty intervals is 95% by default and set when defining the VOI class in utilities.py
 
 # Running GUI is the default
 os.system("python WINDMONTE_GUI.py")
