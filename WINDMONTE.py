@@ -44,7 +44,7 @@ outputfile = 'output_data.pkl'  # specify output file
 UPCs = True  # Set to True to compute the UPCs
 UPC_M = 100  # Set the number of trials to simulate for each error source in calculating UPCs.  Recommend >100.
 
-s_flag = 'none'  # Choose methodology for random uncertainty: 
+s_flag = 'P'  # Choose methodology for random uncertainty: 
     # "P" to propagate from variable U_random, 
     # "DCR" to determine VOI uncertainty from direct comparison of replicate data.  Must have replicate data and a function defined to populate that data.
     # "None" to only evaluate systematic uncertainty
@@ -65,13 +65,13 @@ This version has 3 options to load data:
 """
 
 # Uncomment to load data from .pkl file
-Load_source = 'inputdata_example.pkl'
+""" Load_source = 'inputdata_example.pkl'
 with open(Load_source, 'rb') as f:  
-    data,data_multisample,testinfo = pickle.load(f)
+    data,data_multisample,testinfo = pickle.load(f) """
 
 # Uncomment to load data from .csv file
-""" Load_source = 'inputdata_example.csv'
-data,testinfo = WINDMONTE_utils.load_csv_data(Load_source) """
+Load_source = 'inputdata_example.csv'
+data,testinfo = utilities.load_csv_data(Load_source)
 
 # If using predicted data for test planning, input data here
 
