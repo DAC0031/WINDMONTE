@@ -44,7 +44,7 @@ outputfile = 'output_data.pkl'  # specify output file
 UPCs = True  # Set to True to compute the UPCs
 UPC_M = 100  # Set the number of trials to simulate for each error source in calculating UPCs.  Recommend >100.
 
-s_flag = 'P'  # Choose methodology for random uncertainty: 
+s_flag = 'DCR'  # Choose methodology for random uncertainty: 
     # "P" to propagate from variable U_random, 
     # "DCR" to determine VOI uncertainty from direct comparison of replicate data.  Must have replicate data and a function defined to populate that data.
     # "None" to only evaluate systematic uncertainty
@@ -65,13 +65,13 @@ This version has 3 options to load data:
 """
 
 # Uncomment to load data from .pkl file
-""" Load_source = 'inputdata_example.pkl'
+Load_source = 'inputdata_example.pkl'
 with open(Load_source, 'rb') as f:  
-    data,data_multisample,testinfo = pickle.load(f) """
+    data,data_multisample,testinfo = pickle.load(f)
 
 # Uncomment to load data from .csv file
-Load_source = 'inputdata_example.csv'
-data,testinfo = utilities.load_csv_data(Load_source)
+""" Load_source = 'inputdata_example.csv'
+data,testinfo = utilities.load_csv_data(Load_source) """
 
 # If using predicted data for test planning, input data here
 
@@ -120,7 +120,8 @@ if s_flag == 'P':
 elif s_flag == 'DCR':
     # if direct comparison of replicate data is used, include that data here and select "DCR" for s_flag variable.
 
-    # Example load of unexpanded (1 standard deviation) random uncertainty for VOIs in list of tuple format.  1st element of tuple is AOA [deg], 2nd is unexpanded random uncertainty for the VOI at that AOA.
+    # Example load of unexpanded (1 standard deviation) random uncertainty for VOIs in list of tuple format.  1st element of tuple is 
+    # AOA [deg], 2nd is unexpanded random uncertainty for the VOI at that AOA.
     ### REPLACE WITH YOUR REPLICATE DATA RANDOM UNCERTANTIES
     replicate_data['CD'] = [(-5.1696176180857, 0.0001591001714773477), (-3.9038281366313283, 0.0002328149047544271), (-2.7015872529049942, 0.000255926596458534), (-1.4653745819689186, 0.00023525321670086246), (0.005571468152566158, 0.0002702930907591112), (1.4625085741663215, 0.0003232038437630706), (2.5085521866487785, 0.00022311370322637323), (3.782178415561224, 0.0001975598105961035), (5.26902419943794, 0.0002841372898124322), (6.3518042509958565, 0.0002677303360101057), (7.686353639591748, 0.0006978682620026499), (8.824421183061578, 0.0018574082451621157), (9.987800930228191, 0.0005839499314171011)]
     replicate_data['CL'] = [(-5.1696176180857, 0.0018709575732063172), (-3.9038281366313283, 0.001989294285249109), (0.005571468152566158, 0.0018901707900155947), (2.5085521866487785, 0.002383971631659089), (5.076555544067032, 0.0021087021830378167), (8.863682914191438, 0.0030536688041053295), (9.987800930228191, 0.0017020507250227065)]
