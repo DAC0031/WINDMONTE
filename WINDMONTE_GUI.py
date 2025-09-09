@@ -1,4 +1,24 @@
 # WINDMONTE is licensed under GNU GPL v3, see COPYING.txt
+""" 
+WINDMONTE.py is a "WIND" tunnel "MONTE" Carlo simulation for uncertainty propagation and sensitivity analysis of wind tunnel test data.  
+
+Author: Drew Curriston
+Date: 28 February, 2024
+Location: Oran W. Nicks Low Speed Wind Tunnel, Texas A&M University
+
+The original code was developed independently and toward fulfillment of doctoral program requirements as published in "WIND TUNNEL DATA 
+QUALITY ASSESSMENT AND IMPROVEMENT THROUGH INTEGRATION OF UNCERTAINTY ANALYSIS IN TEST DESIGN," PhD Dissertation, Texas A&M University, 2024.
+
+This version is a generic copy that removes all code specific to data I/O at the Oran W. Nicks LSWT, removes code relating to the analysis 
+of multiple objectives covered in the dissertation, provides additional in-line comments, and removes MCM convergence criteria in an effort 
+to simplify.  This version of the code limits some of the capabilities that were used in completion of the dissertation in an attempt to improve 
+utility. 
+
+The code is separated into three regions, which are commented within the code: 1) Inputs, 2) MCM simulation, and 3) Plotting results.
+
+In order to run the code, ensure the following Python packages are installed: numpy, scipy, matplotlib, pandas, tkinter.
+
+"""
 
 import tkinter as tk
 from tkinter import filedialog

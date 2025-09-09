@@ -28,10 +28,7 @@ utility.
 
 The code is separated into three regions, which are commented within the code: 1) Inputs, 2) MCM simulation, and 3) Plotting results.
 
-TO-DO LIST:
-Add planning predictions function from aero coefficients
-Add NRT random uncertainty option
-Add replicate data random uncertainty contributions
+In order to run the code, ensure the following Python packages are installed: numpy, scipy, matplotlib, pandas, tkinter.
 
 """
 tic = time.time()
