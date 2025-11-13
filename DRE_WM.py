@@ -85,12 +85,13 @@ def DREs(input_data, G=None):
     # allow G to override S and W, otherwise use defaults
     S_local = G.get('S') if isinstance(G, dict) and 'S' in G else S_default
     W_local = G.get('W') if isinstance(G, dict) and 'W' in G else W_default
-    q = 0.5 * RHO_default * V_default**2
+    #Q = 0.5 * RHO_default * V_default**2
 
     for e in input_data:
         N_meas = e.get('NF', 0)
         A_meas = e.get('AF', 0)
         Theta = e.get('Theta', 0)
+        Q = e.get('Q', 0)
         A_rad = math.radians(Theta)
 
         N_aero = N_meas - W_local * math.sin(A_rad)
@@ -99,8 +100,8 @@ def DREs(input_data, G=None):
         L = N_aero * math.cos(A_rad) - A_aero * math.sin(A_rad)
         D = N_aero * math.sin(A_rad) + A_aero * math.cos(A_rad)
 
-        C_L = L / (q * S_local)
-        C_D = D / (q * S_local)
+        C_L = L / (Q * S_local)
+        C_D = D / (Q * S_local)
 
         out.append({
             'NF': N_meas,
@@ -110,7 +111,7 @@ def DREs(input_data, G=None):
             'RM': e.get('RM', 0),
             'YM': e.get('YM', 0),
             'Theta': Theta,
-            'Q': q,
+            'Q': Q,
             'S': S_local,
             'W': W_local,
             'CL': C_L,

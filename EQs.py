@@ -4,15 +4,15 @@ import pickle
 
 
 # This realies on all my arrays being the same length
-AOA_list = [-2,-1,0,1,2,3,4,5,6,7] # Angle of Attack in degrees
+AOA_list = [-3 + 0.5*i for i in range(31)] # Angle of Attack in degrees
 CL_list = [.0806*a+.2495 for a in AOA_list] # Lift Coefficient
 CD_list = [.0271+.0534*x**2 for x in CL_list] # Drag oefficient
 
 #Model Constants
-V = 95.33 # Velocity in ft/s
-RHO = 0.002378 # Air Density in slugs/ft^3
-S = 7.44 # Wing Area in ft^2
-W = 15 # Weight in lbs
+V = 110 # Velocity in ft/s
+RHO = 0.00242 # Air Density in slugs/ft^3
+S = 0.77 # Wing Area in ft^2
+W = 10 # Weight in lbs
 
 # Initializing array to store results
 N_mean_list = np.zeros(len(CL_list))

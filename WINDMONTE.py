@@ -86,14 +86,14 @@ follow the format used in the example:
     - source: label the source for plotting later
     - units: list the units, must match the units in the 'data' variable nominal values for each measurement the error source applies to
 """
-U_systematic.add_error_source(measurements=['AOA'],distribution='norm',params=[0,0.2],source='b_AOA',units='deg')
-U_systematic.add_error_source(measurements=['Q'],distribution='norm',params=[0,0.5],source='b_Q',units='psf')
-U_systematic.add_error_source(measurements=['NF'],distribution='norm',params=[0,0.3/2],source='b_NF',units='lbf')
-U_systematic.add_error_source(measurements=['SF'],distribution='norm',params=[0,0.3/2],source='b_SF',units='lbf')
-U_systematic.add_error_source(measurements=['AF'],distribution='norm',params=[0,0.06/2],source='b_AF',units='lbf')
-U_systematic.add_error_source(measurements=['PM'],distribution='norm',params=[0,1.6/(2*12)],source='b_PM',units='ft.lbf')
-U_systematic.add_error_source(measurements=['RM'],distribution='norm',params=[0,1.5/(2*12)],source='b_RM',units='ft.lbf')
-U_systematic.add_error_source(measurements=['YM'],distribution='norm',params=[0,2.6/(2*12)],source='b_YM',units='ft.lbf')
+U_systematic.add_error_source(measurements=['Theta'],distribution='norm',params=[0,0.05],source='b_Theta',units='deg')
+U_systematic.add_error_source(measurements=['Q'],distribution='norm',params=[0,0.07],source='b_Q',units='psf')
+U_systematic.add_error_source(measurements=['NF'],distribution='norm',params=[0,0.15/2],source='b_NF',units='lbf')
+U_systematic.add_error_source(measurements=['SF'],distribution='norm',params=[0,0.15/2],source='b_SF',units='lbf')
+U_systematic.add_error_source(measurements=['AF'],distribution='norm',params=[0,0.075/2],source='b_AF',units='lbf')
+U_systematic.add_error_source(measurements=['PM'],distribution='norm',params=[0,0.15/(2*12)],source='b_PM',units='ft.lbf')
+U_systematic.add_error_source(measurements=['RM'],distribution='norm',params=[0,0.15/(2*12)],source='b_RM',units='ft.lbf')
+U_systematic.add_error_source(measurements=['YM'],distribution='norm',params=[0,0.15/(2*12)],source='b_YM',units='ft.lbf')
 
 # 1.4 Define random uncertainty for Variables of Interest (VOIs) using direct comparison of replicate data --OR-- define random uncertainty for elemental error sources 
 U_random = utilities.U_random() # instantiate from random uncertainty class
@@ -101,7 +101,7 @@ replicate_data = {} # define the replicate data variable
 
 if s_flag == 'P':
     # add random elemental error sources to propagate with MCM
-    U_random.add_error_source(measurements=['AOA'],distribution='norm',params=[0,0.05],source='s_AOA',units='deg')
+    U_random.add_error_source(measurements=['Theta'],distribution='norm',params=[0,0.05],source='s_Theta',units='deg')
     U_random.add_error_source(measurements=['Q'],distribution='norm',params=[0,0.5],source='s_Q',units='psf')
     U_random.add_error_source(measurements=['NF'],distribution='norm',params=[0,0.077],source='s_NF',units='lbf')  
     U_random.add_error_source(measurements=['SF'],distribution='norm',params=[0,0.031],source='s_SF',units='lbf')
